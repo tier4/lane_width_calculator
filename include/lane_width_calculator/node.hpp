@@ -40,6 +40,46 @@ using autoware_auto_mapping_msgs::msg::HADMapBin;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::Odometry;
 
+enum class ColorSetting {
+    RED,
+    GREEN,
+    BLUE,
+    YELLOW,
+    PURPLE
+};
+
+void setColor(visualization_msgs::msg::Marker& marker, ColorSetting color) {
+    switch (color) {
+        case ColorSetting::RED:
+            marker.color.r = 1.0;
+            marker.color.g = 0.0;
+            marker.color.b = 0.0;
+            break;
+        case ColorSetting::GREEN:
+            marker.color.r = 0.0;
+            marker.color.g = 1.0;
+            marker.color.b = 0.0;
+            break;
+        case ColorSetting::BLUE:
+            marker.color.r = 0.0;
+            marker.color.g = 0.0;
+            marker.color.b = 1.0;
+            break;
+        case ColorSetting::YELLOW:
+            marker.color.r = 1.0;
+            marker.color.g = 1.0;
+            marker.color.b = 0.0;
+            break;
+        case ColorSetting::PURPLE:
+            marker.color.r = 0.5;
+            marker.color.g = 0.0;
+            marker.color.b = 0.5;
+            break;
+    }
+    marker.color.a = 1.0; // alpha
+}
+
+
 class CalculatorNode: public rclcpp::Node
 {
 public:
@@ -62,14 +102,18 @@ public:
   rclcpp::Subscription<Odometry>::SharedPtr sub_odom_;
   double vehicle_width_;
   double vehicle_length_;
+  double vehicle_height_;
 
   std::unordered_map<std::string, geometry_msgs::msg::Pose> position_pose_map_;
+  std::unordered_map<std::string, std::array<double,2>> position_offset_map_;
 
 // Member Functions
   void mapCallback(const HADMapBin::ConstSharedPtr msg);
   void poseCallback(const PoseStamped::ConstSharedPtr msg);
   void odomCallback(const Odometry::ConstSharedPtr msg);
   void updateVehiclePoses(const geometry_msgs::msg::Pose & pose);
+  bool vehicleIsInsideLane();
+  void publishBBOX();
 };
 
 

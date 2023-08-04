@@ -39,15 +39,16 @@ geometry_msgs::msg::Pose calcPoseFromRelativeOffset(
   return output_pose;
 }
 
-void calcLeftOrRightOffsets(lanelet::ConstLanelet lanelet, const geometry_msgs::msg::Pose & search_pose)
+std::array<double,2> calcLeftOrRightOffsets(lanelet::ConstLanelet lanelet, const geometry_msgs::msg::Pose & search_pose)
 {
   const lanelet::ConstLineString2d left_bound = lanelet.leftBound2d();
   const lanelet::ConstLineString2d right_bound = lanelet.rightBound2d();
   const double left_offset = calcLeftLateralOffset(left_bound, search_pose);
   const double right_offset = calcRightLateralOffset(right_bound, search_pose);
-  std::cout << "left_offset: " << left_offset << std::endl;
-  std::cout << "right_offset: " << right_offset << std::endl;
+  return {left_offset, right_offset};
 }
+
+
 
 
 CalculatorNode::CalculatorNode(const rclcpp::NodeOptions & options)
@@ -63,9 +64,11 @@ CalculatorNode::CalculatorNode(const rclcpp::NodeOptions & options)
     "~/input/odom", 1,
     std::bind(&CalculatorNode::odomCallback, this, std::placeholders::_1));
 
+  pub_debug_markers_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/output/debug_markers", 1);
   // parameters
   vehicle_width_ = this->declare_parameter("vehicle_width", 2.5);
   vehicle_length_ = this->declare_parameter("vehicle_length", 5.0);
+  vehicle_height_ = this->declare_parameter("vehicle_height", 3.0);
 
   // if set to true, use odometry instead of pose
   use_odom_ = this->declare_parameter("use_odom", true);
@@ -122,13 +125,16 @@ void CalculatorNode::odomCallback(const Odometry::ConstSharedPtr msg)
   if (lanelet::utils::query::getCurrentLanelets(const_lanelets_, query_pose, &current_lanelets)) {
     // do something
     updateVehiclePoses(query_pose);
-
-    calcLeftOrRightOffsets(current_lanelets.front(), query_pose);
+    // calc left/right lateral offsets for each pose
+    for(auto & pose_pair: position_pose_map_){
+      position_offset_map_[pose_pair.first] = calcLeftOrRightOffsets(current_lanelets.front(), pose_pair.second);
+    }
+    publishBBOX();
   }
 }
 
 
-  void CalculatorNode::updateVehiclePoses(const geometry_msgs::msg::Pose & pose)
+void CalculatorNode::updateVehiclePoses(const geometry_msgs::msg::Pose & pose)
 {
   position_pose_map_["center"] = pose;
   position_pose_map_["front_left"] = calcPoseFromRelativeOffset(
@@ -140,6 +146,59 @@ void CalculatorNode::odomCallback(const Odometry::ConstSharedPtr msg)
   position_pose_map_["rear_right"] = calcPoseFromRelativeOffset(
     pose, -vehicle_length_ / 2.0, -vehicle_width_ / 2.0);
 }
+
+
+bool CalculatorNode::vehicleIsInsideLane()
+{
+  for (auto & pose_pair : position_offset_map_) {
+    const auto & offset_pair = pose_pair.second;
+    const auto left_offset = offset_pair[0];
+    const auto right_offset = offset_pair[1];
+    if (left_offset > 0.0) {
+      std::cout << "vehicle is outside of lane" << std::endl;
+      std::cout << "left offset of " << pose_pair.first << " is " << left_offset  << " [m] overed"<< std::endl;
+      return false;
+    }else if(right_offset < 0.0){
+      std::cout << "vehicle is outside of lane" << std::endl;
+      std::cout << "right offset of " << pose_pair.first << " is " << std::abs(right_offset)  << " [m] overed"<< std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
+void CalculatorNode::publishBBOX()
+{
+  const bool is_inside = vehicleIsInsideLane();
+
+  visualization_msgs::msg::Marker marker;
+  marker.header.frame_id = "map"; // frame id
+  marker.type = visualization_msgs::msg::Marker::CUBE;
+  marker.action = visualization_msgs::msg::Marker::ADD;
+
+  // define marker position
+  marker.pose = position_pose_map_["center"];
+
+  // set merker size
+  marker.scale.x = vehicle_length_;
+  marker.scale.y = vehicle_width_;
+  marker.scale.z = vehicle_height_;
+  
+  // set marker color
+  if(is_inside){
+    setColor(marker, ColorSetting::GREEN);
+  }else{
+    setColor(marker, ColorSetting::RED);
+  }
+  
+  // push
+  visualization_msgs::msg::MarkerArray marker_array;
+  marker_array.markers.push_back(marker);
+
+  // publish
+  pub_debug_markers_->publish(marker_array);
+}
+
 
 }
 
