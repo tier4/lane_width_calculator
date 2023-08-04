@@ -5,7 +5,9 @@
 namespace lane_width_calculator
 {
 
-double calcRightLateralOffset(
+// return the lateral offset from the boundary line
+// value is positive if the vehicle is on the right side of the boundary line
+double calcLateralOffset(
   const lanelet::ConstLineString2d & boundary_line, const geometry_msgs::msg::Pose & search_pose)
 {
   std::vector<geometry_msgs::msg::Point> boundary_path(boundary_line.size());
@@ -15,13 +17,7 @@ double calcRightLateralOffset(
     boundary_path[i] = tier4_autoware_utils::createPoint(x, y, 0.0);
   }
 
-  return std::fabs(motion_utils::calcLateralOffset(boundary_path, search_pose.position));
-}
-
-double calcLeftLateralOffset(
-  const lanelet::ConstLineString2d & boundary_line, const geometry_msgs::msg::Pose & search_pose)
-{
-  return -calcRightLateralOffset(boundary_line, search_pose);
+  return motion_utils::calcLateralOffset(boundary_path, search_pose.position);
 }
 
 geometry_msgs::msg::Pose calcPoseFromRelativeOffset(
@@ -43,8 +39,8 @@ std::array<double,2> calcLeftOrRightOffsets(lanelet::ConstLanelet lanelet, const
 {
   const lanelet::ConstLineString2d left_bound = lanelet.leftBound2d();
   const lanelet::ConstLineString2d right_bound = lanelet.rightBound2d();
-  const double left_offset = calcLeftLateralOffset(left_bound, search_pose);
-  const double right_offset = calcRightLateralOffset(right_bound, search_pose);
+  const double left_offset = calcLateralOffset(left_bound, search_pose);
+  const double right_offset = calcLateralOffset(right_bound, search_pose);
   return {left_offset, right_offset};
 }
 
