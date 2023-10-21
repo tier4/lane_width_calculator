@@ -72,8 +72,27 @@ CalculatorNode::CalculatorNode(const rclcpp::NodeOptions & options)
   // file logging parameters
   save_to_csv_ = this->declare_parameter<bool>("save_to_csv");
   save_file_name_ = this->declare_parameter<std::string>("save_file_name");
+
+  // initialize csv file
+  position_list_ = {"center", "front_left", "front_right", "rear_left", "rear_right"};
+  if(save_to_csv_){
+    file_stream_.open(save_file_name_);
+    file_stream_ << "time, vehicle_x, vehicle_y, ";
+    for(auto & position_name: position_list_){
+      file_stream_ << position_name << "_left_offset, " << position_name << "_right_offset, ";
+    }
+    file_stream_ << "is_inside_lane" << std::endl;
+  }
 }
 
+// deconstructor
+CalculatorNode::~CalculatorNode()
+{
+  // close csv file
+  if(save_to_csv_){
+    file_stream_.close();
+  }
+}
 
 
 void CalculatorNode::mapCallback(const HADMapBin::ConstSharedPtr msg)
@@ -129,7 +148,13 @@ void CalculatorNode::odomCallback(const Odometry::ConstSharedPtr msg)
     for(auto & pose_pair: position_pose_map_){
       position_offset_map_[pose_pair.first] = calcLeftOrRightOffsets(current_lanelets.front(), pose_pair.second);
     }
+    // publish visualization marker
     publishBBOX();
+
+    // save to csv
+    if(save_to_csv_){
+      appendToCSV();
+    }
   }
 }
 
@@ -199,8 +224,33 @@ void CalculatorNode::publishBBOX()
   pub_debug_markers_->publish(marker_array);
 }
 
+bool CalculatorNode::appendToCSV()
+{
+  const auto current_time = this->now();
+  const double current_time_sec = current_time.seconds();
+  const auto current_pose = position_pose_map_["center"];
+  const auto vehicle_x = current_pose.position.x;
+  const auto vehicle_y = current_pose.position.y;
+  // 1. write time, vehicle_x, vehicle_y to csv 
+  file_stream_ << std::fixed << std::setprecision(6);
+  file_stream_ << current_time_sec << "," << vehicle_x << "," << vehicle_y << "," ;
 
+  // 2. for each keys in position_list_ get left and right offset
+  for(auto & position_name: position_list_){
+    const auto & offset_pair = position_offset_map_.at(position_name);
+    const auto left_offset = offset_pair[0];
+    const auto right_offset = offset_pair[1];
+    file_stream_ << left_offset << "," << right_offset << ",";
+  }
+
+  // 3. get if the vehicle is inside lane
+  const bool is_inside = vehicleIsInsideLane();
+  const int is_inside_int = is_inside ? 1 : 0;
+  file_stream_ << is_inside_int << std::endl;
+  return true;
 }
+
+} // namespace lane_width_calculator
 
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(lane_width_calculator::CalculatorNode)

@@ -34,6 +34,8 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 
 namespace lane_width_calculator
@@ -87,7 +89,7 @@ class CalculatorNode: public rclcpp::Node
 {
 public:
   CalculatorNode(const rclcpp::NodeOptions & options);
-  ~CalculatorNode() = default;
+  ~CalculatorNode();
 
   // Lanelet Map Pointers
   std::shared_ptr<lanelet::LaneletMap> lanelet_map_ptr_;
@@ -108,9 +110,11 @@ public:
   double vehicle_height_;
   bool save_to_csv_;
   std::string save_file_name_;
+  std::ofstream file_stream_;
 
   std::unordered_map<std::string, geometry_msgs::msg::Pose> position_pose_map_;
   std::unordered_map<std::string, std::array<double,2>> position_offset_map_;
+  std::vector<std::string> position_list_;
 
 // Member Functions
   void mapCallback(const HADMapBin::ConstSharedPtr msg);
@@ -119,6 +123,7 @@ public:
   void updateVehiclePoses(const geometry_msgs::msg::Pose & pose);
   bool vehicleIsInsideLane();
   void publishBBOX();
+  bool appendToCSV();
 };
 
 
