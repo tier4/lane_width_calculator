@@ -23,4 +23,5 @@ rclcpp_components_register_node(lane_width_calculator_node
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
+  config
 )

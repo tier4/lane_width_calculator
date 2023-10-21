@@ -62,16 +62,16 @@ CalculatorNode::CalculatorNode(const rclcpp::NodeOptions & options)
 
   pub_debug_markers_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/output/debug_markers", 1);
   // parameters
-  vehicle_width_ = this->declare_parameter("vehicle_width", 2.5);
-  vehicle_length_ = this->declare_parameter("vehicle_length", 5.0);
-  vehicle_height_ = this->declare_parameter("vehicle_height", 3.0);
+  vehicle_width_ = this->declare_parameter<double>("vehicle_width");
+  vehicle_length_ = this->declare_parameter<double>("vehicle_length");
+  vehicle_height_ = this->declare_parameter<double>("vehicle_height");
 
   // if set to true, use odometry instead of pose
-  use_odom_ = this->declare_parameter("use_odom", true);
+  use_odom_ = this->declare_parameter<bool>("use_odom");
 
   // file logging parameters
-  save_to_csv_ = this->declare_parameter("save_to_csv", false);
-  save_file_name_ = this->declare_parameter("save_file_name", "/tmp/lane_width_calculator/lane_width_data.csv");
+  save_to_csv_ = this->declare_parameter<bool>("save_to_csv");
+  save_file_name_ = this->declare_parameter<std::string>("save_file_name");
 }
 
 

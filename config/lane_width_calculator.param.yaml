@@ -1,15 +1,15 @@
 /**:
   ros__parameters:
-  # vehicle parameters
-  vehicle_width: 2.5
-  vehicle_length: 5.0
-  vehicle_height: 2.0
+    # vehicle parameters
+    vehicle_width: 2.5
+    vehicle_length: 5.0
+    vehicle_height: 2.0
 
-  # save settings
-  save_to_csv: true
-  save_file_name: "/tmp/test.csv"
+    # save settings
+    save_to_csv: true
+    save_file_name: "/tmp/test.csv"
 
-  # Determine how to get vehicle self pose 
-  # if use_odom is true, the vehicle pose will be get from odom topic
-  # if use_odom is false, the vehicle pose will be get from pose topic
-  use_odom: true
+    # Determine how to get vehicle self pose 
+    # if use_odom is true, the vehicle pose will be get from odom topic
+    # if use_odom is false, the vehicle pose will be get from pose topic
+    use_odom: true

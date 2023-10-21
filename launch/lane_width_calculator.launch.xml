@@ -8,7 +8,6 @@
 
   <node pkg="lane_width_calculator" exec="lane_width_calculator" name="lane_width_calculator" output="screen">
     <param from="$(var param_file_path)"/>
-    <param name="use_odom" value="true"/>
     <remap from="~/input/vector_map" to="$(var vector_map_topic)"/>
     <remap from="~/input/pose" to="$(var pose_topic)"/>
     <remap from="~/input/odom" to="$(var odom_topic)"/>
