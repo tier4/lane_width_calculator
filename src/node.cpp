@@ -68,6 +68,10 @@ CalculatorNode::CalculatorNode(const rclcpp::NodeOptions & options)
 
   // if set to true, use odometry instead of pose
   use_odom_ = this->declare_parameter("use_odom", true);
+
+  // file logging parameters
+  save_to_csv_ = this->declare_parameter("save_to_csv", false);
+  save_file_name_ = this->declare_parameter("save_file_name", "/tmp/lane_width_calculator/lane_width_data.csv");
 }
 
 

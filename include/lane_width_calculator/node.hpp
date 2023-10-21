@@ -106,6 +106,8 @@ public:
   double vehicle_width_;
   double vehicle_length_;
   double vehicle_height_;
+  bool save_to_csv_;
+  std::string save_file_name_;
 
   std::unordered_map<std::string, geometry_msgs::msg::Pose> position_pose_map_;
   std::unordered_map<std::string, std::array<double,2>> position_offset_map_;

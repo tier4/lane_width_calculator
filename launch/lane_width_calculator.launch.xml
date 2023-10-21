@@ -4,10 +4,10 @@
   <arg name="pose_topic" default="/localization/pose_estimator/pose"/>
   <arg name="odom_topic" default="/localization/kinematic_state"/>
   <arg name="output_topic" default="/debug/vehicle_lane_marker"/>
+  <arg name="param_file_path" default="$(find-pkg-share lane_width_calculator)/config/lane_width_calculator.param.yaml"/>
 
   <node pkg="lane_width_calculator" exec="lane_width_calculator" name="lane_width_calculator" output="screen">
-    <param name="vehicle_width" value="2.5"/>
-    <param name="vehicle_length" value="4.5"/>
+    <param from="$(var param_file_path)"/>
     <param name="use_odom" value="true"/>
     <remap from="~/input/vector_map" to="$(var vector_map_topic)"/>
     <remap from="~/input/pose" to="$(var pose_topic)"/>
