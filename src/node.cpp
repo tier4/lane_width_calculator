@@ -35,7 +35,8 @@ geometry_msgs::msg::Pose calcPoseFromRelativeOffset(
   return output_pose;
 }
 
-std::array<double,2> calcLeftOrRightOffsets(lanelet::ConstLanelet lanelet, const geometry_msgs::msg::Pose & search_pose)
+// return left and right lateral offsets from the boundary line
+std::array<double,2> calcLeftOrRightOffsetsInOneLane(lanelet::ConstLanelet lanelet, const geometry_msgs::msg::Pose & search_pose)
 {
   const lanelet::ConstLineString2d left_bound = lanelet.leftBound2d();
   const lanelet::ConstLineString2d right_bound = lanelet.rightBound2d();
@@ -43,8 +44,6 @@ std::array<double,2> calcLeftOrRightOffsets(lanelet::ConstLanelet lanelet, const
   const double right_offset = calcLateralOffset(right_bound, search_pose);
   return {left_offset, right_offset};
 }
-
-
 
 
 CalculatorNode::CalculatorNode(const rclcpp::NodeOptions & options)
@@ -110,7 +109,7 @@ void CalculatorNode::mapCallback(const HADMapBin::ConstSharedPtr msg)
   map_loaded_ = true;
 }
 
-
+// pose callback is not used if use_odom_ is true
 void CalculatorNode::poseCallback(const PoseStamped::ConstSharedPtr msg)
 {
   // If map is empty or use odom flag do nothing
@@ -126,7 +125,7 @@ void CalculatorNode::poseCallback(const PoseStamped::ConstSharedPtr msg)
     // do something
     updateVehiclePoses(query_pose);
 
-    calcLeftOrRightOffsets(current_lanelets.front(), query_pose);
+    calcLeftOrRightOffsetsInOneLane(current_lanelets.front(), query_pose);
   }
 }
 
@@ -146,7 +145,7 @@ void CalculatorNode::odomCallback(const Odometry::ConstSharedPtr msg)
     updateVehiclePoses(query_pose);
     // calc left/right lateral offsets for each pose
     for(auto & pose_pair: position_pose_map_){
-      position_offset_map_[pose_pair.first] = calcLeftOrRightOffsets(current_lanelets.front(), pose_pair.second);
+      position_offset_map_[pose_pair.first] = calcLeftOrRightOffsetsInOneLane(current_lanelets.front(), pose_pair.second);
     }
     // publish visualization marker
     publishBBOX();

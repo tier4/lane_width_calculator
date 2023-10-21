@@ -28,6 +28,8 @@ Run following launch file to start the node.
 ros2 launch lane_width_calculator lane_width_calculator.launch.xml
 ```
 
+For settings, see [Parameter Settings](#parameter-settings) section.
+
 ### Visualize settings
 
 The default output is `/debug/vehicle_lane_marker` topic.
@@ -58,12 +60,16 @@ The default output is `/debug/vehicle_lane_marker` topic.
 
 ### Parameters
 
+Paramters can be set in the `lane_width_calculator.param.yaml` file.
+
 | Name               | Type   | Default Value | Description                   |
 | ------------------ | ------ | --------------| ----------------------------- |
 | `vehicle_width`    | double | 2.5           | Width of the vehicle (meters) |
 | `vehicle_length`   | double | 5.0           | Length of the vehicle (meters)|
-| `vehicle_height`   | double | 3.0           | Height of the vehicle (meters)|
+| `vehicle_height`   | double | 2.0           | Height of the vehicle (meters)|
 | `use_odom`         | bool   | true          | Flag to use odometry data     |
+| `save_to_csv`      | bool   | false         | Flag to save the result to csv|
+| `save_file_name`   | string | "/tmp/test.csv" | Path to save the csv file     |
 
 
 
