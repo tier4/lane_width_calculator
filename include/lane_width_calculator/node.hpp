@@ -12,9 +12,9 @@
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
-#include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
-#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
+#include <autoware_map_msgs/msg/lanelet_map_bin.hpp>
+#include <autoware_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_perception_msgs/msg/tracked_objects.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -41,7 +41,7 @@
 namespace lane_width_calculator
 {
 
-using autoware_auto_mapping_msgs::msg::HADMapBin;
+using HADMapBin = autoware_map_msgs::msg::LaneletMapBin;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::Odometry;
 

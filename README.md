@@ -20,7 +20,7 @@ Just clone this package and build it with colcon.
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select lane_width_calculator
 ```
 
-### default launcher
+### run default launcher
 
 Run following launch file to start the node.
 
